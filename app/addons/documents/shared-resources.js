@@ -13,6 +13,7 @@
 import app from "../../app";
 import FauxtonAPI from "../../core/api";
 import { deleteRequest } from "../../core/ajax";
+import * as preciseJSON from "../../core/precise-json";
 import PagingCollection from "../../../assets/js/plugins/cloudant.pagingcollection";
 
 // defined here because this is contains the base resources used throughout the addon and outside,
@@ -174,7 +175,26 @@ Documents.Doc = FauxtonAPI.Model.extend({
     });
   },
 
+  sync: function (method, model, options = {}) {
+    const syncOptions = Object.assign({}, options);
+
+    if (method === 'read') {
+      syncOptions.dataType = 'text';
+    } else if (method === 'create' || method === 'update' || method === 'patch') {
+      syncOptions.contentType = 'application/json';
+      syncOptions.data = preciseJSON.stringify(
+        syncOptions.attrs || model.toJSON(syncOptions)
+      );
+    }
+
+    return FauxtonAPI.Model.prototype.sync.call(this, method, model, syncOptions);
+  },
+
   parse: function (resp) {
+    if (typeof resp === 'string') {
+      resp = preciseJSON.parse(resp);
+    }
+
     if (resp.rev) {
       resp._rev = resp.rev;
       delete resp.rev;
@@ -196,7 +216,7 @@ Documents.Doc = FauxtonAPI.Model.extend({
   prettyJSON: function () {
     var data = this.get("doc") ? this.get("doc") : this.attributes;
 
-    return JSON.stringify(data, null, "  ");
+    return preciseJSON.stringify(data, null, "  ");
   },
 
   copy: function (copyId) {
