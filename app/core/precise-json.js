@@ -180,6 +180,7 @@ const serialize = (value, indent, depth, seen, inArray) => {
   return result;
 };
 
-export const stringify = (value, _replacer = null, space = undefined) => {
+export const stringify = (value, ...args) => {
+  const space = args[1];
   return serialize(value, getIndent(space), 0, new Set(), false);
 };
