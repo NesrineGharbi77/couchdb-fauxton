@@ -12,6 +12,7 @@
 
 import { LosslessInteger, parse, stringify } from '../precise-json';
 
+// Regression coverage for apache/couchdb#6008.
 describe('precise-json', () => {
   it('preserves an integer larger than Number.MAX_SAFE_INTEGER', () => {
     const text = '{"huge":9223372036854775807}';
